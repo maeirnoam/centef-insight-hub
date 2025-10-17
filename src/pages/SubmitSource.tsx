@@ -35,7 +35,7 @@ const SubmitSource = () => {
       if (!userId) return;
 
       const { data: roleData, error } = await supabase
-        .from("user_roles")
+        .from("users")
         .select("role")
         .eq("user_id", userId)
         .eq("role", "admin")
