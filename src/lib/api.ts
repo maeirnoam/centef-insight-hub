@@ -15,6 +15,7 @@ export const api = {
     title: string;
     description: string;
     terrorOrganization: string;
+    filename?: string;
     file?: string;
     username: string;
     userID?: string | null;
@@ -34,6 +35,8 @@ export const api = {
     title: string;
     description: string;
     terror_organization: string;
+    filename?: string;
+    drive_id?: string;
     username: string;
   }) => {
     const response = await fetch(N8N_WEBHOOK_URL, {

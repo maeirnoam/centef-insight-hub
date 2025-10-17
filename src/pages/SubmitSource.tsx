@@ -21,6 +21,7 @@ const SubmitSource = () => {
     title: "",
     description: "",
     terrorOrganization: "",
+    filename: "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +78,7 @@ const SubmitSource = () => {
         title: formData.title,
         description: formData.description,
         terrorOrganization: formData.terrorOrganization,
+        filename: formData.filename,
         file: fileBase64,
         username: username || "",
         userID: userId,
@@ -194,6 +196,15 @@ const SubmitSource = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="filename">Filename</Label>
+                  <Input
+                    id="filename"
+                    value={formData.filename}
+                    onChange={(e) => setFormData({ ...formData, filename: e.target.value })}
+                  />
                 </div>
 
                 <div className="space-y-2">

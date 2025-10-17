@@ -16,6 +16,8 @@ interface Submission {
   title: string;
   description: string;
   terror_organization: string;
+  filename: string | null;
+  drive_id: string | null;
   file_url: string | null;
   status: string;
   created_at: string;
@@ -83,7 +85,9 @@ const Review = () => {
       contributor_name: submission.contributor_name,
       title: submission.title,
       description: submission.description,
-      terror_organization: submission.terror_organization,
+      terror_organization: submission.terror_organization || "",
+      filename: submission.filename || "",
+      drive_id: submission.drive_id || "",
     });
   };
 
@@ -99,6 +103,8 @@ const Review = () => {
         title: editedData.title,
         description: editedData.description,
         terror_organization: editedData.terror_organization,
+        filename: editedData.filename,
+        drive_id: editedData.drive_id,
         username: username || "",
       });
 
@@ -223,8 +229,24 @@ const Review = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Terror Organization</label>
                     <Input
-                      value={editedData.terror_organization}
+                      value={editedData.terror_organization || ""}
                       onChange={(e) => setEditedData({ ...editedData, terror_organization: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Filename</label>
+                    <Input
+                      value={editedData.filename || ""}
+                      onChange={(e) => setEditedData({ ...editedData, filename: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Drive ID</label>
+                    <Input
+                      value={editedData.drive_id || ""}
+                      onChange={(e) => setEditedData({ ...editedData, drive_id: e.target.value })}
                     />
                   </div>
 
