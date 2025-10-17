@@ -35,10 +35,10 @@ const SubmitSource = () => {
       if (!userId) return;
 
       const { data: roleData, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
         .maybeSingle();
 
       if (!error && roleData) {
@@ -101,7 +101,7 @@ const SubmitSource = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -117,106 +117,105 @@ const SubmitSource = () => {
             </Button>
           </div>
         </div>
-        {userRole !== 'guest' && (
+        {
           <Tabs value={location.pathname} className="px-6">
             <TabsList>
-              <TabsTrigger value="/chat" onClick={() => navigate('/chat')}>
+              <TabsTrigger value="/chat" onClick={() => navigate("/chat")}>
                 Chat
               </TabsTrigger>
-              <TabsTrigger value="/submit" onClick={() => navigate('/submit')}>
+              <TabsTrigger value="/submit" onClick={() => navigate("/submit")}>
                 Submit Source
               </TabsTrigger>
               {isAdmin && (
-                <TabsTrigger value="/review" onClick={() => navigate('/review')}>
+                <TabsTrigger value="/review" onClick={() => navigate("/review")}>
                   Review Submissions
                 </TabsTrigger>
               )}
             </TabsList>
           </Tabs>
-        )}
+        }
       </div>
 
       <div className="flex-1 overflow-auto bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
         <div className="max-w-2xl mx-auto py-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Submit Source</CardTitle>
+              <CardDescription>Contribute to CENTEF's research database</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="contributorName">Contributor Name</Label>
+                  <Input
+                    id="contributorName"
+                    value={formData.contributorName}
+                    onChange={(e) => setFormData({ ...formData, contributorName: e.target.value })}
+                    required
+                  />
+                </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Submit Source</CardTitle>
-            <CardDescription>Contribute to CENTEF's research database</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="contributorName">Contributor Name</Label>
-                <Input
-                  id="contributorName"
-                  value={formData.contributorName}
-                  onChange={(e) => setFormData({ ...formData, contributorName: e.target.value })}
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="What is this contribution? What is the main takeaway from this source?"
+                    rows={5}
+                    required
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="What is this contribution? What is the main takeaway from this source?"
-                  rows={5}
-                  required
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="terrorOrganization">Terror Organization</Label>
+                  <Select
+                    value={formData.terrorOrganization}
+                    onValueChange={(value) => setFormData({ ...formData, terrorOrganization: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {terrorOrganizations.map((org) => (
+                        <SelectItem key={org} value={org}>
+                          {org}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="terrorOrganization">Terror Organization</Label>
-                <Select
-                  value={formData.terrorOrganization}
-                  onValueChange={(value) => setFormData({ ...formData, terrorOrganization: value })}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {terrorOrganizations.map((org) => (
-                      <SelectItem key={org} value={org}>
-                        {org}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="file">File Attachment</Label>
+                  <Input
+                    id="file"
+                    type="file"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    accept=".pdf,.doc,.docx,.txt"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="file">File Attachment</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  accept=".pdf,.doc,.docx,.txt"
-                />
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Submitting..." : "Submit Source"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Submitting..." : "Submit Source"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
-  </div>
   );
 };
 
