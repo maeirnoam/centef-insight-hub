@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleGuestLogin = () => {
-    localStorage.setItem('userRole', 'guest');
-    localStorage.setItem('username', 'Guest');
-    navigate('/chat');
+    localStorage.setItem("userRole", "guest");
+    localStorage.setItem("username", "Guest");
+    navigate("/chat");
   };
 
   const handleMemberLogin = async (e: React.FormEvent) => {
@@ -27,17 +27,17 @@ const Login = () => {
     try {
       // Query the users table directly
       const { data: user, error: userError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .eq('password', password)
+        .from("users")
+        .select("*")
+        .eq("username", username)
+        .eq("password", password)
         .maybeSingle();
 
       if (userError || !user) {
         toast({
           title: "Login failed",
           description: "Invalid username or password",
-          variant: "destructive"
+          variant: "destructive",
         });
         setIsLoading(false);
         return;
@@ -45,24 +45,24 @@ const Login = () => {
 
       // Check if user has admin role
       const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
+        .from("users")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
         .maybeSingle();
 
       const isAdmin = roleData !== null;
 
-      localStorage.setItem('userId', user.id);
-      localStorage.setItem('username', user.username);
-      localStorage.setItem('userRole', isAdmin ? 'admin' : 'user');
-      
-      navigate('/chat');
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("username", user.username);
+      localStorage.setItem("userRole", isAdmin ? "admin" : "user");
+
+      navigate("/chat");
     } catch (error) {
       toast({
         title: "Error",
         description: "An error occurred during login",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -106,7 +106,7 @@ const Login = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {isLoading ? "Logging in..." : "Login"}
                 </Button>
               </form>
             </CardContent>
