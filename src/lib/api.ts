@@ -1,8 +1,10 @@
-const N8N_WEBHOOK_URL = 'https://n8n.srv974700.hstgr.cloud/webhook/bf4dd093-bb02-472c-9454-7ab9af97bd1d';
+const N8N_CHAT_WEBHOOK_URL = 'https://n8n.srv974700.hstgr.cloud/webhook/bf4dd093-bb02-472c-9454-7ab9af97bd1d';
+const N8N_SUBMISSION_WEBHOOK_URL = 'https://n8n.srv974700.hstgr.cloud/webhook-test/310c4127-c569-4a9c-b96d-b44345627107';
+const N8N_REVIEW_WEBHOOK_URL = 'https://n8n.srv974700.hstgr.cloud/webhook-test/2cc0a4f3-1178-4fd1-8c9c-a5597f17d4d2';
 
 export const api = {
   sendChatMessage: async (message: string, username: string) => {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(N8N_CHAT_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, username })
@@ -20,7 +22,7 @@ export const api = {
     username: string;
     userID?: string | null;
   }) => {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(N8N_SUBMISSION_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
@@ -39,7 +41,7 @@ export const api = {
     drive_url?: string;
     username: string;
   }) => {
-    const response = await fetch(N8N_WEBHOOK_URL, {
+    const response = await fetch(N8N_REVIEW_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
