@@ -23,7 +23,7 @@ const SubmitSource = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const username = localStorage.getItem("username");
-  const userId = localStorage.getItem("id");
+  const userId = localStorage.getItem("userId");
   const terrorOrganizations = [
     "Hamas",
     "Hezbollah",

@@ -17,6 +17,7 @@ export const api = {
     terrorOrganization: string;
     file?: string;
     username: string;
+    userID?: string | null;
   }) => {
     const response = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
