@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { api } from '@/lib/api';
@@ -22,6 +23,7 @@ interface Submission {
 
 const Review = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
@@ -40,11 +42,14 @@ const Review = () => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('check-admin-role', {
-        body: { userId }
-      });
+      const { data: roleData, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
 
-      if (error || !data?.isAdmin) {
+      if (error || !roleData) {
         navigate('/chat');
         return;
       }
@@ -121,13 +126,43 @@ const Review = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
-      <div className="max-w-6xl mx-auto py-8">
-        <Button variant="ghost" onClick={() => navigate('/chat')} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Chat
-        </Button>
+    <div className="flex flex-col h-screen bg-background">
+      <div className="border-b border-border bg-card">
+        <div className="flex items-center justify-between px-6 py-3">
+          <h1 className="text-xl font-bold text-primary">CENTEF Research Assistant</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{username}</span>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+        <Tabs value={location.pathname} className="px-6">
+          <TabsList>
+            <TabsTrigger value="/chat" onClick={() => navigate('/chat')}>
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="/submit" onClick={() => navigate('/submit')}>
+              Submit Source
+            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="/review" onClick={() => navigate('/review')}>
+                Review Submissions
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </Tabs>
+      </div>
+
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+        <div className="max-w-6xl mx-auto py-8">
 
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
@@ -229,6 +264,7 @@ const Review = () => {
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

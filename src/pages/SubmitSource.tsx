@@ -1,17 +1,20 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
 
 const SubmitSource = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     contributorName: "",
@@ -21,9 +24,30 @@ const SubmitSource = () => {
   });
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const username = localStorage.getItem("username");
   const userId = localStorage.getItem("userId");
+  const userRole = localStorage.getItem("userRole");
+
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!userId) return;
+
+      const { data: roleData, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!error && roleData) {
+        setIsAdmin(true);
+      }
+    };
+
+    checkAdminRole();
+  }, [userId]);
   const terrorOrganizations = [
     "Hamas",
     "Hezbollah",
@@ -75,13 +99,45 @@ const SubmitSource = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
-      <div className="max-w-2xl mx-auto py-8">
-        <Button variant="ghost" onClick={() => navigate("/chat")} className="mb-4">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Chat
-        </Button>
+    <div className="flex flex-col h-screen bg-background">
+      <div className="border-b border-border bg-card">
+        <div className="flex items-center justify-between px-6 py-3">
+          <h1 className="text-xl font-bold text-primary">CENTEF Research Assistant</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{username}</span>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
+        </div>
+        {userRole !== 'guest' && (
+          <Tabs value={location.pathname} className="px-6">
+            <TabsList>
+              <TabsTrigger value="/chat" onClick={() => navigate('/chat')}>
+                Chat
+              </TabsTrigger>
+              <TabsTrigger value="/submit" onClick={() => navigate('/submit')}>
+                Submit Source
+              </TabsTrigger>
+              {isAdmin && (
+                <TabsTrigger value="/review" onClick={() => navigate('/review')}>
+                  Review Submissions
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-auto bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+        <div className="max-w-2xl mx-auto py-8">
 
         <Card>
           <CardHeader>
@@ -160,6 +216,7 @@ const SubmitSource = () => {
         </Card>
       </div>
     </div>
+  </div>
   );
 };
 

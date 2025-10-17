@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, LogOut, FileText, MessageSquare } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Send, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { api } from '@/lib/api';
@@ -19,6 +20,7 @@ interface Message {
 
 const Chat = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -44,11 +46,14 @@ const Chat = () => {
   const checkAdminRole = async () => {
     if (!userId) return;
 
-    const { data, error } = await supabase.functions.invoke('check-admin-role', {
-      body: { userId }
-    });
+    const { data: roleData, error } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'admin')
+      .maybeSingle();
 
-    if (!error && data?.isAdmin) {
+    if (!error && roleData) {
       setIsAdmin(true);
     }
   };
@@ -128,57 +133,38 @@ const Chat = () => {
   ];
 
   return (
-    <div className="flex h-screen bg-background">
-      {userRole !== 'guest' && (
-        <div className="w-64 bg-card border-r border-border p-4 flex flex-col">
-          <div className="mb-6">
-            <h2 className="text-lg font-bold text-primary">CENTEF</h2>
-            <p className="text-sm text-muted-foreground">{username}</p>
-          </div>
-          
-          <ScrollArea className="flex-1">
-            <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-2">Chat History</h3>
-              {chatHistory.map((chat) => (
-                <Card key={chat.id} className="p-3 hover:bg-accent cursor-pointer">
-                  <p className="text-sm truncate">{chat.message}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(chat.created_at).toLocaleDateString()}
-                  </p>
-                </Card>
-              ))}
-            </div>
-          </ScrollArea>
-
-          <div className="mt-4 space-y-2">
-            <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/submit')}>
-              <FileText className="w-4 h-4 mr-2" />
-              Submit Source
-            </Button>
-            {isAdmin && (
-              <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/review')}>
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Review Submissions
-              </Button>
-            )}
-            <Button variant="destructive" className="w-full justify-start" onClick={handleLogout}>
+    <div className="flex flex-col h-screen bg-background">
+      <div className="border-b border-border bg-card">
+        <div className="flex items-center justify-between px-6 py-3">
+          <h1 className="text-xl font-bold text-primary">CENTEF Research Assistant</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{username}</span>
+            <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
           </div>
         </div>
-      )}
+        {userRole !== 'guest' && (
+          <Tabs value={location.pathname} className="px-6">
+            <TabsList>
+              <TabsTrigger value="/chat" onClick={() => navigate('/chat')}>
+                Chat
+              </TabsTrigger>
+              <TabsTrigger value="/submit" onClick={() => navigate('/submit')}>
+                Submit Source
+              </TabsTrigger>
+              {isAdmin && (
+                <TabsTrigger value="/review" onClick={() => navigate('/review')}>
+                  Review Submissions
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
+        )}
+      </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="border-b border-border p-4 flex justify-between items-center bg-card">
-          <h1 className="text-xl font-bold">CENTEF Research Assistant</h1>
-          {userRole === 'guest' && (
-            <Button variant="ghost" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </Button>
-          )}
-        </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
 
         <ScrollArea className="flex-1 p-6">
           {messages.length === 0 && (
