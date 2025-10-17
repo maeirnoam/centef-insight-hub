@@ -25,22 +25,37 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('authenticate-user', {
-        body: { username, password }
-      });
+      // Query the users table directly
+      const { data: user, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .eq('password', password)
+        .maybeSingle();
 
-      if (error || !data?.success) {
+      if (userError || !user) {
         toast({
           title: "Login failed",
-          description: data?.error || "Invalid username or password",
+          description: "Invalid username or password",
           variant: "destructive"
         });
+        setIsLoading(false);
         return;
       }
 
-      localStorage.setItem('userId', data.user.id);
-      localStorage.setItem('username', data.user.username);
-      localStorage.setItem('userRole', data.user.role);
+      // Check if user has admin role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      const isAdmin = roleData !== null;
+
+      localStorage.setItem('userId', user.id);
+      localStorage.setItem('username', user.username);
+      localStorage.setItem('userRole', isAdmin ? 'admin' : 'user');
       
       navigate('/chat');
     } catch (error) {
