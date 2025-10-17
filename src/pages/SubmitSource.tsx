@@ -1,38 +1,38 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { api } from '@/lib/api';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { api } from "@/lib/api";
 
 const SubmitSource = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    contributorName: '',
-    title: '',
-    description: '',
-    terrorOrganization: ''
+    contributorName: "",
+    title: "",
+    description: "",
+    terrorOrganization: "",
   });
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const username = localStorage.getItem('username');
-
+  const username = localStorage.getItem("username");
+  const userId = localStorage.getItem("id");
   const terrorOrganizations = [
-    'Hamas',
-    'Hezbollah',
-    'ISIS',
-    'Al-Qaeda',
-    'Taliban',
-    'Boko Haram',
-    'Al-Shabaab',
-    'Other'
+    "Hamas",
+    "Hezbollah",
+    "ISIS",
+    "Al-Qaeda",
+    "Taliban",
+    "Boko Haram",
+    "Al-Shabaab",
+    "Other",
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ const SubmitSource = () => {
     setIsLoading(true);
 
     try {
-      let fileBase64 = '';
+      let fileBase64 = "";
       if (file) {
         const reader = new FileReader();
         fileBase64 = await new Promise((resolve) => {
@@ -55,19 +55,20 @@ const SubmitSource = () => {
         description: formData.description,
         terrorOrganization: formData.terrorOrganization,
         file: fileBase64,
-        username: username || ''
+        username: username || "",
+        userID: userId,
       });
 
       toast({
         title: "Success",
-        description: "Source submitted successfully"
+        description: "Source submitted successfully",
       });
-      navigate('/chat');
+      navigate("/chat");
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to submit source",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -77,7 +78,7 @@ const SubmitSource = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
       <div className="max-w-2xl mx-auto py-8">
-        <Button variant="ghost" onClick={() => navigate('/chat')} className="mb-4">
+        <Button variant="ghost" onClick={() => navigate("/chat")} className="mb-4">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Chat
         </Button>
@@ -85,9 +86,7 @@ const SubmitSource = () => {
         <Card>
           <CardHeader>
             <CardTitle>Submit Source</CardTitle>
-            <CardDescription>
-              Contribute to CENTEF's research database
-            </CardDescription>
+            <CardDescription>Contribute to CENTEF's research database</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -154,7 +153,7 @@ const SubmitSource = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Submitting...' : 'Submit Source'}
+                {isLoading ? "Submitting..." : "Submit Source"}
               </Button>
             </form>
           </CardContent>
