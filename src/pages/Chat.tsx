@@ -35,7 +35,7 @@ const Chat = () => {
     if (userRole !== 'guest' && userId) {
       loadChatHistory();
     }
-  }, []);
+  }, [username, userRole, userId, navigate]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
