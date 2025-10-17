@@ -8,8 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { api } from '@/lib/api';
 
 const SubmitSource = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     contributorName: '',
     title: '',
@@ -18,8 +21,6 @@ const SubmitSource = () => {
   });
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const username = localStorage.getItem('username');
 
@@ -48,25 +49,20 @@ const SubmitSource = () => {
         });
       }
 
-      const response = await fetch('https://n8n.srv974700.hstgr.cloud/webhook-test/bf4dd093-bb02-472c-9454-7ab9af97bd1d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          file: fileBase64,
-          username
-        })
+      await api.submitSource({
+        contributorName: formData.contributorName,
+        title: formData.title,
+        description: formData.description,
+        terrorOrganization: formData.terrorOrganization,
+        file: fileBase64,
+        username: username || ''
       });
 
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Source submitted successfully"
-        });
-        navigate('/chat');
-      } else {
-        throw new Error('Submission failed');
-      }
+      toast({
+        title: "Success",
+        description: "Source submitted successfully"
+      });
+      navigate('/chat');
     } catch (error) {
       toast({
         title: "Error",

@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, LogOut, FileText, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 interface Message {
   id: string;
@@ -16,13 +17,13 @@ interface Message {
 }
 
 const Chat = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const username = localStorage.getItem('username') || 'Guest';
   const userRole = localStorage.getItem('userRole') || 'guest';
@@ -70,16 +71,7 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://n8n.srv974700.hstgr.cloud/webhook-test/bf4dd093-bb02-472c-9454-7ab9af97bd1d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: input,
-          username 
-        })
-      });
-
-      const data = await response.json();
+      const data = await api.sendChatMessage(input, username);
       
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

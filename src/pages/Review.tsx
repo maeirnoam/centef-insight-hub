@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { api } from '@/lib/api';
 
 interface Submission {
   id: string;
@@ -21,12 +21,12 @@ interface Submission {
 }
 
 const Review = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [editedData, setEditedData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const userRole = localStorage.getItem('userRole');
   const username = localStorage.getItem('username');
@@ -37,7 +37,7 @@ const Review = () => {
       return;
     }
     loadSubmissions();
-  }, []);
+  }, [userRole, navigate]);
 
   const loadSubmissions = async () => {
     const { data, error } = await supabase
@@ -66,31 +66,28 @@ const Review = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://n8n.srv974700.hstgr.cloud/webhook-test/bf4dd093-bb02-472c-9454-7ab9af97bd1d', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          submissionId: selectedSubmission.id,
-          decision,
-          ...editedData,
-          username
-        })
+      await api.reviewSubmission({
+        submissionId: selectedSubmission.id,
+        decision,
+        contributor_name: editedData.contributor_name,
+        title: editedData.title,
+        description: editedData.description,
+        terror_organization: editedData.terror_organization,
+        username: username || ''
       });
 
-      if (response.ok) {
-        await supabase
-          .from('submissions')
-          .update({ status: decision, reviewed_at: new Date().toISOString() })
-          .eq('id', selectedSubmission.id);
+      await supabase
+        .from('submissions')
+        .update({ status: decision, reviewed_at: new Date().toISOString() })
+        .eq('id', selectedSubmission.id);
 
-        toast({
-          title: "Success",
-          description: `Submission ${decision}`
-        });
-        
-        setSelectedSubmission(null);
-        loadSubmissions();
-      }
+      toast({
+        title: "Success",
+        description: `Submission ${decision}`
+      });
+      
+      setSelectedSubmission(null);
+      loadSubmissions();
     } catch (error) {
       toast({
         title: "Error",
