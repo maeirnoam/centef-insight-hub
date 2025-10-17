@@ -15,9 +15,9 @@ interface Submission {
   contributor_name: string;
   title: string;
   description: string;
-  terror_organization: string;
+  organizations: string[];
   filename: string | null;
-  drive_id: string | null;
+  drive_url: string | null;
   file_url: string | null;
   status: string;
   created_at: string;
@@ -85,9 +85,9 @@ const Review = () => {
       contributor_name: submission.contributor_name,
       title: submission.title,
       description: submission.description,
-      terror_organization: submission.terror_organization || "",
+      terror_organization: submission.organizations?.join(", ") || "",
       filename: submission.filename || "",
-      drive_id: submission.drive_id || "",
+      drive_url: submission.drive_url || "",
     });
   };
 
@@ -104,7 +104,7 @@ const Review = () => {
         description: editedData.description,
         terror_organization: editedData.terror_organization,
         filename: editedData.filename,
-        drive_id: editedData.drive_id,
+        drive_url: editedData.drive_url,
         username: username || "",
       });
 
@@ -243,11 +243,21 @@ const Review = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Drive ID</label>
-                    <Input
-                      value={editedData.drive_id || ""}
-                      onChange={(e) => setEditedData({ ...editedData, drive_id: e.target.value })}
-                    />
+                    <label className="text-sm font-medium">Drive URL</label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={editedData.drive_url || ""}
+                        onChange={(e) => setEditedData({ ...editedData, drive_url: e.target.value })}
+                        className="flex-1"
+                      />
+                      {editedData.drive_url && (
+                        <Button variant="outline" asChild>
+                          <a href={editedData.drive_url} target="_blank" rel="noopener noreferrer">
+                            Open
+                          </a>
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {selectedSubmission.file_url && (

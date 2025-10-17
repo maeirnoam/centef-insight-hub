@@ -36,7 +36,7 @@ export const api = {
     description: string;
     terror_organization: string;
     filename?: string;
-    drive_id?: string;
+    drive_url?: string;
     username: string;
   }) => {
     const response = await fetch(N8N_WEBHOOK_URL, {
