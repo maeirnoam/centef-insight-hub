@@ -145,7 +145,7 @@ const Chat = () => {
             </Button>
           </div>
         </div>
-        {userRole !== 'guest' && (
+        {(
           <Tabs value={location.pathname} className="px-6">
             <TabsList>
               <TabsTrigger value="/chat" onClick={() => navigate('/chat')}>
