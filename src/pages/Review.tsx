@@ -30,14 +30,36 @@ const Review = () => {
 
   const userRole = localStorage.getItem('userRole');
   const username = localStorage.getItem('username');
+  const userId = localStorage.getItem('userId');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (userRole !== 'admin') {
-      navigate('/chat');
-      return;
+    const checkAdminRole = async () => {
+      if (!userId) {
+        navigate('/chat');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('check-admin-role', {
+        body: { userId }
+      });
+
+      if (error || !data?.isAdmin) {
+        navigate('/chat');
+        return;
+      }
+
+      setIsAdmin(true);
+    };
+
+    checkAdminRole();
+  }, [userId, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadSubmissions();
     }
-    loadSubmissions();
-  }, [userRole, navigate]);
+  }, [isAdmin]);
 
   const loadSubmissions = async () => {
     const { data, error } = await supabase

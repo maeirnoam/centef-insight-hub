@@ -8,6 +8,7 @@ import { Send, LogOut, FileText, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { api } from '@/lib/api';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
   id: string;
@@ -28,6 +29,7 @@ const Chat = () => {
   const username = localStorage.getItem('username') || 'Guest';
   const userRole = localStorage.getItem('userRole') || 'guest';
   const userId = localStorage.getItem('userId');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!username) {
@@ -35,8 +37,21 @@ const Chat = () => {
     }
     if (userRole !== 'guest' && userId) {
       loadChatHistory();
+      checkAdminRole();
     }
   }, [username, userRole, userId, navigate]);
+
+  const checkAdminRole = async () => {
+    if (!userId) return;
+
+    const { data, error } = await supabase.functions.invoke('check-admin-role', {
+      body: { userId }
+    });
+
+    if (!error && data?.isAdmin) {
+      setIsAdmin(true);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -140,7 +155,7 @@ const Chat = () => {
               <FileText className="w-4 h-4 mr-2" />
               Submit Source
             </Button>
-            {userRole === 'admin' && (
+            {isAdmin && (
               <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/review')}>
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Review Submissions
@@ -187,23 +202,22 @@ const Chat = () => {
           {messages.map((msg) => (
             <div key={msg.id} className={`mb-6 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <Card className={`p-4 max-w-2xl ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-card'}`}>
-                <div dangerouslySetInnerHTML={{ __html: msg.content }} />
-                {msg.sources && msg.sources.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <p className="text-xs font-semibold mb-2">Sources:</p>
-                    {msg.sources.map((source, i) => (
-                      <a
-                        key={i}
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-accent hover:underline block"
-                      >
-                        {source.title}
-                      </a>
-                    ))}
-                  </div>
-                )}
+                <div className="markdown-content">
+                  <ReactMarkdown
+                    components={{
+                      a: ({ node, ...props }) => (
+                        <a
+                          {...props}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="markdown-link"
+                        />
+                      ),
+                    }}
+                  >
+                    {msg.content}
+                  </ReactMarkdown>
+                </div>
               </Card>
             </div>
           ))}

@@ -77,4 +77,21 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Markdown link styling */
+  .markdown-content {
+    @apply leading-relaxed;
+  }
+
+  .markdown-link {
+    @apply text-accent underline hover:text-accent/80 transition-colors font-medium;
+  }
+
+  .markdown-content p {
+    @apply mb-3;
+  }
+
+  .markdown-content p:last-child {
+    @apply mb-0;
+  }
 }

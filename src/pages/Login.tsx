@@ -25,25 +25,22 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*, user_roles(role)')
-        .eq('username', username)
-        .eq('password', password)
-        .single();
+      const { data, error } = await supabase.functions.invoke('authenticate-user', {
+        body: { username, password }
+      });
 
-      if (error || !data) {
+      if (error || !data?.success) {
         toast({
           title: "Login failed",
-          description: "Invalid username or password",
+          description: data?.error || "Invalid username or password",
           variant: "destructive"
         });
         return;
       }
 
-      localStorage.setItem('userId', data.id);
-      localStorage.setItem('username', username);
-      localStorage.setItem('userRole', data.user_roles[0]?.role || 'member');
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('username', data.user.username);
+      localStorage.setItem('userRole', data.user.role);
       
       navigate('/chat');
     } catch (error) {

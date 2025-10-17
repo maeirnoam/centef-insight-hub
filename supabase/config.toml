@@ -1,0 +1,7 @@
+project_id = "placeholder"
+
+[functions.authenticate-user]
+verify_jwt = false
+
+[functions.check-admin-role]
+verify_jwt = false
