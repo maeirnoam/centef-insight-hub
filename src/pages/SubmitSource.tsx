@@ -213,7 +213,7 @@ const SubmitSource = () => {
                     id="file"
                     type="file"
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    accept=".pdf,.doc,.docx,.txt,.jpeg,.jpg,.xlsx,.xls,.pptx,.png,.csv"
+                    accept=".pdf,.doc,.docx,.txt,.jpeg,.jpg,.xlsx,.xls,.pptx,.png,.csv,.mp4"
                   />
                 </div>
 
