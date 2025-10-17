@@ -1,4 +1,4 @@
-const N8N_WEBHOOK_URL = 'https://n8n.srv974700.hstgr.cloud/webhook-test/bf4dd093-bb02-472c-9454-7ab9af97bd1d';
+const N8N_WEBHOOK_URL = 'https://n8n.srv974700.hstgr.cloud/webhook/bf4dd093-bb02-472c-9454-7ab9af97bd1d';
 
 export const api = {
   sendChatMessage: async (message: string, username: string) => {
