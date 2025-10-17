@@ -43,19 +43,12 @@ const Login = () => {
         return;
       }
 
-      // Check if user has admin role
-      const { data: roleData } = await supabase
-        .from("users")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      const isAdmin = roleData !== null;
+      // Determine role directly from users table record
+      const isAdmin = user.role === "admin";
 
       localStorage.setItem("userId", user.id);
       localStorage.setItem("username", user.username);
-      localStorage.setItem("userRole", isAdmin ? "admin" : "user");
+      localStorage.setItem("userRole", user.role || (isAdmin ? "admin" : "user"));
 
       navigate("/chat");
     } catch (error) {

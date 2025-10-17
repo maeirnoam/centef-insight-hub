@@ -46,16 +46,15 @@ const Chat = () => {
   const checkAdminRole = async () => {
     if (!userId) return;
 
-    const { data: roleData, error } = await supabase
-      .from("users")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (!error && roleData) {
-      setIsAdmin(true);
-    }
+     const { data: roleData, error } = await supabase
+       .from("users")
+       .select("role")
+       .eq("id", userId)
+       .maybeSingle();
+ 
+     if (!error && roleData?.role === "admin") {
+       setIsAdmin(true);
+     }
   };
 
   useEffect(() => {

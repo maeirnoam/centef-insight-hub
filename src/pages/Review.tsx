@@ -42,19 +42,18 @@ const Review = () => {
         return;
       }
 
-      const { data: roleData, error } = await supabase
-        .from("users")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (error || !roleData) {
-        navigate("/chat");
-        return;
-      }
-
-      setIsAdmin(true);
+       const { data: roleData, error } = await supabase
+         .from("users")
+         .select("role")
+         .eq("id", userId)
+         .maybeSingle();
+ 
+       if (error || !roleData || roleData.role !== "admin") {
+         navigate("/chat");
+         return;
+       }
+ 
+       setIsAdmin(true);
     };
 
     checkAdminRole();
