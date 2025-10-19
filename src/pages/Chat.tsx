@@ -18,7 +18,7 @@ interface Message {
   sources?: Array<{ title: string; url: string }>;
 }
 
-/* ---------- Mock history (for illustration only) ---------- */
+/* -------------------- */
 type HistoryItem = {
   id: string;
   created_at: string;
@@ -115,11 +115,7 @@ const Chat = () => {
 
   const checkAdminRole = async () => {
     if (!userId) return;
-    const { data: roleData, error } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .maybeSingle();
+    const { data: roleData, error } = await supabase.from("users").select("role").eq("id", userId).maybeSingle();
     if (!error && roleData?.role === "admin") {
       setIsAdmin(true);
     }
@@ -265,9 +261,7 @@ const Chat = () => {
             </div>
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-2">
-                {chatHistory.length === 0 && (
-                  <p className="text-xs text-muted-foreground px-2 py-4">No history yet.</p>
-                )}
+                {chatHistory.length === 0 && <p className="text-xs text-muted-foreground px-2 py-4">No history yet.</p>}
                 {chatHistory.map((h: any) => (
                   <button
                     key={h.id}
@@ -311,14 +305,9 @@ const Chat = () => {
             )}
 
             {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`mb-6 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+              <div key={msg.id} className={`mb-6 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <Card
-                  className={`p-4 max-w-2xl ${
-                    msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-card"
-                  }`}
+                  className={`p-4 max-w-2xl ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-card"}`}
                 >
                   <div className="markdown-content">
                     <ChatMarkdownLite content={msg.content} className="prose max-w-none" />
