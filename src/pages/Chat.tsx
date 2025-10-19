@@ -255,9 +255,7 @@ const Chat = () => {
           <aside className="hidden md:flex w-80 shrink-0 border-r border-border bg-card flex-col">
             <div className="px-4 py-3 border-b">
               <h2 className="text-sm font-semibold">Recent Chats</h2>
-              <p className="text-xs text-muted-foreground">
-                {USE_MOCK_HISTORY ? "Illustration (mock data)" : "Last 10 exchanges"}
-              </p>
+              <p className="text-xs text-muted-foreground">{USE_MOCK_HISTORY ? "Chat History" : "Last 10 exchanges"}</p>
             </div>
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-2">
