@@ -125,7 +125,7 @@ const Chat = () => {
     "What are the latest trends in terror financing?",
     "Tell me about cryptocurrency and terrorism",
     "How do organizations track terror funding?",
-    "how do terror organizations finance their operations?",
+    "How do terror organizations finance their operations?",
   ];
 
   return (
