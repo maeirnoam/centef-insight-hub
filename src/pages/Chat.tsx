@@ -46,15 +46,11 @@ const Chat = () => {
   const checkAdminRole = async () => {
     if (!userId) return;
 
-     const { data: roleData, error } = await supabase
-       .from("users")
-       .select("role")
-       .eq("id", userId)
-       .maybeSingle();
- 
-     if (!error && roleData?.role === "admin") {
-       setIsAdmin(true);
-     }
+    const { data: roleData, error } = await supabase.from("users").select("role").eq("id", userId).maybeSingle();
+
+    if (!error && roleData?.role === "admin") {
+      setIsAdmin(true);
+    }
   };
 
   useEffect(() => {
@@ -129,6 +125,7 @@ const Chat = () => {
     "What are the latest trends in terror financing?",
     "Tell me about cryptocurrency and terrorism",
     "How do organizations track terror funding?",
+    "how do terror organizations finance their operations?",
   ];
 
   return (
