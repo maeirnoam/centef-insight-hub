@@ -1,14 +1,21 @@
 import React from "react";
+import ReactMarkdown from "react-markdown";
 
+/**
+ * ChatMarkdownLite (hybrid)
+ * Minimal renderer that mixes full Markdown (via ReactMarkdown) with
+ * a tiny table parser for GitHub-style tables. No extra packages.
+ */
 export type ChatMarkdownLiteProps = {
   content: string;
   className?: string;
 };
 
-// If the whole table is in a single line (like "| a | b | | 1 | 2 |"),
+// If a whole table is in a single line (e.g. "| a | b | | 1 | 2 |"),
 // convert the `| |` row separators into newlines so our simple parser can read it.
 function normalizeCompactTables(src: string) {
-  if (!/\n/.test(src) && /\|.*\|\s*\|/.test(src)) {
+  // Only apply when we detect at least 2 rows separated by a bare `|` between them.
+  if (!/\n/.test(src) && /\|[^\n]*\|\s*\|[^\n]*\|/.test(src)) {
     return src.replace(/\|\s*\|/g, "|\n|");
   }
   return src;
@@ -31,21 +38,28 @@ function splitRow(line: string) {
   return parts.map((s) => s.trim());
 }
 
-export default function ChatMarkdownLite({ content, className }: ChatMarkdownLiteProps) {
-  const text = normalizeCompactTables(content);
-  const lines = text.split(/\r?\n/);
-  const out: React.ReactNode[] = [];
+// Break content into blocks: normal markdown vs table blocks
+function segmentContent(src: string) {
+  const lines = src.split(/\r?\n/);
+  const segments = [] as Array<{ type: "md"; text: string } | { type: "table"; header: string[]; rows: string[][] }>;
   let i = 0;
+  let mdBuf: string[] = [];
+
+  const flushMd = () => {
+    if (mdBuf.length) {
+      segments.push({ type: "md", text: mdBuf.join("\n") });
+      mdBuf = [];
+    }
+  };
 
   while (i < lines.length) {
     const line = lines[i];
-
-    // Detect possible table start: a header row followed by a separator row
     const headerCells = splitRow(line);
     const nextLine = lines[i + 1] ?? "";
 
     if (headerCells && isSeparator(nextLine)) {
-      // Collect body rows until hitting a non-table line
+      // Table block
+      flushMd();
       i += 2; // skip header + separator
       const bodyRows: string[][] = [];
       while (i < lines.length) {
@@ -54,59 +68,69 @@ export default function ChatMarkdownLite({ content, className }: ChatMarkdownLit
         bodyRows.push(rowCells);
         i++;
       }
-
-      out.push(
-        <div key={`tbl-${i}-${out.length}`} className="my-3 w-full overflow-x-auto">
-          <table className="min-w-[560px] border-collapse text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {headerCells.map((c, idx) => (
-                  <th key={idx} className="border px-3 py-2 text-left font-semibold">
-                    {c}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {bodyRows.map((row, rIdx) => (
-                <tr key={rIdx}>
-                  {row.map((c, cIdx) => (
-                    <td key={cIdx} className="border px-3 py-2 align-top">
-                      {c}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
+      segments.push({ type: "table", header: headerCells, rows: bodyRows });
       continue;
     }
 
-    // Not a table: group consecutive non-empty lines into a paragraph
-    if (line.trim() !== "") {
-      const buf: string[] = [line];
-      i++;
-      while (i < lines.length && lines[i].trim() !== "") {
-        const maybeHead = splitRow(lines[i]);
-        const maybeSep = lines[i + 1] ?? "";
-        if (maybeHead && isSeparator(maybeSep)) break; // stop before next table
-        buf.push(lines[i]);
-        i++;
-      }
-      out.push(
-        <p key={`p-${i}-${out.length}`} className="my-2 leading-relaxed">
-          {buf.join(" ")}
-        </p>
-      );
-      continue;
-    }
-
-    // Blank line spacing
-    out.push(<div key={`sp-${i}-${out.length}`} className="h-2" />);
+    // Not a table header: accumulate as markdown
+    mdBuf.push(line);
     i++;
   }
 
-  return <div className={className}>{out}</div>;
+  flushMd();
+  return segments;
+}
+
+export default function ChatMarkdownLite({ content, className }: ChatMarkdownLiteProps) {
+  const normalized = normalizeCompactTables(content);
+  const segments = segmentContent(normalized);
+
+  return (
+    <div className={className}>
+      {segments.map((seg, idx) => {
+        if (seg.type === "md") {
+          // Render normal Markdown so headings/lists/links work
+          return (
+            <ReactMarkdown
+              key={idx}
+              components={{
+                a: ({ node, ...props }) => (
+                  <a {...props} target="_blank" rel="noopener noreferrer" className="markdown-link" />
+                ),
+              }}
+            >
+              {seg.text}
+            </ReactMarkdown>
+          );
+        }
+        // Render table blocks
+        return (
+          <div key={idx} className="my-3 w-full overflow-x-auto">
+            <table className="min-w-[560px] border-collapse text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  {seg.header.map((c, hIdx) => (
+                    <th key={hIdx} className="border px-3 py-2 text-left font-semibold">
+                      {c}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {seg.rows.map((row, rIdx) => (
+                  <tr key={rIdx}>
+                    {row.map((c, cIdx) => (
+                      <td key={cIdx} className="border px-3 py-2 align-top">
+                        {c}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
