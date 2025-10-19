@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { api } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
+import ChatMarkdownLite from "@/components/ui/ChatMarkdownLite";
+
 
 interface Message {
   id: string;
@@ -128,6 +130,17 @@ const Chat = () => {
     "How do terror organizations finance their operations?",
   ];
 
+  // Detects a GitHub-Flavored Markdown table, including single-line compact tables
+  function looksLikeTable(src: string) {
+    if (!src) return false;
+    // Case A: classic multiline table with a separator row like: |---|
+    if (/\n\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?/.test(src)) return true;
+  // Case B: compact single-line table: "| a | b | | 1 | 2 |"
+    if (!/\n/.test(src) && /\|[^|]+\|\s*\|[^|]+\|/.test(src)) return true;
+    return false;
+}
+
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <div className="border-b border-border bg-card">
@@ -182,19 +195,23 @@ const Chat = () => {
 
           {messages.map((msg) => (
             <div key={msg.id} className={`mb-6 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <Card
-                className={`p-4 max-w-2xl ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-card"}`}
-              >
+              <Card className={`p-4 max-w-2xl ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-card"}`}>
                 <div className="markdown-content">
-                  <ReactMarkdown
-                    components={{
-                      a: ({ node, ...props }) => (
-                        <a {...props} target="_blank" rel="noopener noreferrer" className="markdown-link" />
-                      ),
-                    }}
-                  >
-                    {msg.content}
-                  </ReactMarkdown>
+                  {looksLikeTable(msg.content) ? (
+                    // Render tables as real <table> (no extra libs)
+                    <ChatMarkdownLite content={msg.content} className="prose max-w-none" />
+                  ) : (
+                    // Keep your existing markdown renderer for links, etc.
+                    <ReactMarkdown
+                      components={{
+                        a: ({ node, ...props }) => (
+                          <a {...props} target="_blank" rel="noopener noreferrer" className="markdown-link" />
+                        ),
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  )}
                 </div>
               </Card>
             </div>
